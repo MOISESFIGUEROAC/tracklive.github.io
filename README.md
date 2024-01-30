@@ -3,23 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TrackLiveTZU</title>
+  <title>TrackLive</title>
   <script src="https://unpkg.com/wavesurfer.js"></script>
   <style>
     body {
-      font-family: 'Arial', sans-serif; /* Cambiar a la fuente que desees */
+      font-family: 'Arial', sans-serif;
     }
 
     h2 {
       font-weight: bold;
       font-size: 24px;
-      color: black; /* Color del título */
+      color: black;
     }
 
     #subtitle {
       font-size: 16px;
       font-weight: normal;
-      color: gray; /* Color del subtítulo */
+      color: gray;
     }
 
     button {
@@ -31,11 +31,31 @@
     }
 
     #playButton {
-      color: black; /* Color del botón de reproducción */
+      color: black;
     }
 
     #pauseButton {
-      color: gray; /* Color del botón de pausa */
+      color: gray;
+    }
+
+    #dropArea {
+      border: 2px dashed #ccc;
+      padding: 20px;
+      text-align: center;
+    }
+
+    #uploadButton {
+      font-size: 16px;
+      font-weight: bold;
+      padding: 10px;
+      cursor: pointer;
+      border: none;
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    #fileInput {
+      display: none;
     }
   </style>
 </head>
@@ -44,9 +64,11 @@
 <h2>TrackLive</h2>
 <p id="subtitle">By TZU Worship</p>
 
-<div id="dropArea" style="border: 2px dashed #ccc; padding: 20px; text-align: center;">
-  Arrastra y suelta tus archivos de audio aquí o
-  <button id="loadButton" onclick="loadFiles()">Cargar archivos</button>
+<div id="dropArea" onclick="selectFiles()">
+  Haz clic aquí o arrastra y suelta tus archivos de audio.
+  <br>
+  <button type="button" id="uploadButton" onclick="submitForm()">Subir</button>
+  <input type="file" id="fileInput" multiple onchange="handleFileSelect(this)">
 </div>
 
 <button id="playButton" onclick="playAll()">Play</button>
@@ -68,31 +90,20 @@
   var masterVolume = 1;
   var masterWaveform;
 
+  function selectFiles() {
+    document.getElementById('fileInput').click();
+  }
+
   function allowDrop(event) {
     event.preventDefault();
     document.getElementById('dropArea').style.border = '2px dashed #aaa';
   }
 
-  function drop(event) {
-    event.preventDefault();
+  function handleFileSelect(input) {
     document.getElementById('dropArea').style.border = '2px dashed #ccc';
 
-    var files = event.dataTransfer.files;
-    loadAudioFiles(files);
-  }
+    var files = input.files;
 
-  function loadFiles() {
-    var input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'audio/*';
-    input.multiple = true;
-    input.addEventListener('change', function() {
-      loadAudioFiles(input.files);
-    });
-    input.click();
-  }
-
-  function loadAudioFiles(files) {
     for (var i = 0; i < files.length; i++) {
       var audio = document.createElement('audio');
       audio.src = URL.createObjectURL(files[i]);
@@ -111,11 +122,11 @@
     // Inicializar Wavesurfer para la forma de onda maestra
     masterWaveform = WaveSurfer.create({
       container: '#masterWaveform',
-      waveColor: 'gray', // Cambiar a gris
-      progressColor: 'black', // Cambiar a negro
+      waveColor: 'gray',
+      progressColor: 'black',
       height: 50,
       cursorWidth: 0,
-      interact: true,  // Permitir interacción con la forma de onda
+      interact: true,
     });
 
     // Cargar la forma de onda maestra con el primer archivo de audio
@@ -169,9 +180,14 @@
     });
   }
 
+  function submitForm() {
+    // Lógica para manejar la carga de archivos
+    console.log("Archivos listos para ser procesados:", audioElements);
+  }
+
   var dropArea = document.getElementById('dropArea');
   dropArea.addEventListener('dragover', allowDrop);
-  dropArea.addEventListener('drop', drop);
+  dropArea.addEventListener('drop', handleFileSelect);
 </script>
 
 </body>
