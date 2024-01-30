@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TrackLive</title>
+  <title>TrackLiveTZU</title>
   <script src="https://unpkg.com/wavesurfer.js"></script>
   <style>
     body {
