@@ -7,19 +7,19 @@
   <script src="https://unpkg.com/wavesurfer.js"></script>
   <style>
     body {
-      font-family: 'Arial', sans-serif;
+      font-family: 'Arial', sans-serif; /* Cambiar a la fuente que desees */
     }
 
     h2 {
       font-weight: bold;
       font-size: 24px;
-      color: black;
+      color: black; /* Color del título */
     }
 
     #subtitle {
       font-size: 16px;
       font-weight: normal;
-      color: gray;
+      color: gray; /* Color del subtítulo */
     }
 
     button {
@@ -31,31 +31,47 @@
     }
 
     #playButton {
-      color: black;
+      color: black; /* Color del botón de reproducción */
     }
 
     #pauseButton {
-      color: gray;
+      color: gray; /* Color del botón de pausa */
     }
 
-    #dropArea {
-      border: 2px dashed #ccc;
-      padding: 20px;
-      text-align: center;
+    #masterSeek {
+      width: 100%;
+      margin-top: 10px;
+      -webkit-appearance: none; /* Remove default styles in WebKit browsers */
+      appearance: none;
+      height: 10px;
+      background: #ddd; /* Fondo del riel del control deslizante */
+      outline: none;
+      opacity: 0.7;
+      -webkit-transition: 0.2s; /* Transición suave para cambios */
+      transition: opacity 0.2s;
+      border-radius: 5px; /* Bordes redondeados */
     }
 
-    #uploadButton {
-      font-size: 16px;
-      font-weight: bold;
-      padding: 10px;
+    #masterSeek:hover {
+      opacity: 1; /* Hacer el control deslizante más visible al pasar el mouse */
+    }
+
+    #masterSeek::-webkit-slider-thumb {
+      -webkit-appearance: none; /* Remove default styles in WebKit browsers */
+      appearance: none;
+      width: 20px; /* Ancho del pulgar del control deslizante */
+      height: 20px; /* Altura del pulgar del control deslizante */
+      background: #3498db; /* Color del pulgar del control deslizante */
       cursor: pointer;
-      border: none;
-      background-color: #4CAF50;
-      color: white;
+      border-radius: 50%; /* Bordes redondeados para el pulgar del control deslizante */
     }
 
-    #fileInput {
-      display: none;
+    #masterSeek::-moz-range-thumb {
+      width: 20px; /* Ancho del pulgar del control deslizante en navegadores Firefox */
+      height: 20px; /* Altura del pulgar del control deslizante en navegadores Firefox */
+      background: #3498db; /* Color del pulgar del control deslizante en navegadores Firefox */
+      cursor: pointer;
+      border-radius: 50%; /* Bordes redondeados para el pulgar del control deslizante en navegadores Firefox */
     }
   </style>
 </head>
@@ -64,11 +80,8 @@
 <h2>TrackLive</h2>
 <p id="subtitle">By TZU Worship</p>
 
-<div id="dropArea" onclick="selectFiles()">
-  Haz clic aquí o arrastra y suelta tus archivos de audio.
-  <br>
-  <button type="button" id="uploadButton" onclick="submitForm()">Subir</button>
-  <input type="file" id="fileInput" multiple onchange="handleFileSelect(this)">
+<div id="dropArea" style="border: 2px dashed #ccc; padding: 20px; text-align: center;">
+  Arrastra y suelta tus archivos de audio aquí.
 </div>
 
 <button id="playButton" onclick="playAll()">Play</button>
@@ -90,19 +103,16 @@
   var masterVolume = 1;
   var masterWaveform;
 
-  function selectFiles() {
-    document.getElementById('fileInput').click();
-  }
-
   function allowDrop(event) {
     event.preventDefault();
     document.getElementById('dropArea').style.border = '2px dashed #aaa';
   }
 
-  function handleFileSelect(input) {
+  function drop(event) {
+    event.preventDefault();
     document.getElementById('dropArea').style.border = '2px dashed #ccc';
 
-    var files = input.files;
+    var files = event.dataTransfer.files;
 
     for (var i = 0; i < files.length; i++) {
       var audio = document.createElement('audio');
@@ -122,11 +132,11 @@
     // Inicializar Wavesurfer para la forma de onda maestra
     masterWaveform = WaveSurfer.create({
       container: '#masterWaveform',
-      waveColor: 'gray',
-      progressColor: 'black',
+      waveColor: 'gray', // Cambiar a gris
+      progressColor: 'black', // Cambiar a negro
       height: 50,
       cursorWidth: 0,
-      interact: true,
+      interact: true,  // Permitir interacción con la forma de onda
     });
 
     // Cargar la forma de onda maestra con el primer archivo de audio
@@ -180,14 +190,9 @@
     });
   }
 
-  function submitForm() {
-    // Lógica para manejar la carga de archivos
-    console.log("Archivos listos para ser procesados:", audioElements);
-  }
-
   var dropArea = document.getElementById('dropArea');
   dropArea.addEventListener('dragover', allowDrop);
-  dropArea.addEventListener('drop', handleFileSelect);
+  dropArea.addEventListener('drop', drop);
 </script>
 
 </body>
