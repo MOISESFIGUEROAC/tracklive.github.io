@@ -45,7 +45,8 @@
 <p id="subtitle">By TZU Worship</p>
 
 <div id="dropArea" style="border: 2px dashed #ccc; padding: 20px; text-align: center;">
-  Arrastra y suelta tus archivos de audio aquí.
+  Arrastra y suelta tus archivos de audio aquí o
+  <button id="loadButton" onclick="loadFiles()">Cargar archivos</button>
 </div>
 
 <button id="playButton" onclick="playAll()">Play</button>
@@ -77,7 +78,21 @@
     document.getElementById('dropArea').style.border = '2px dashed #ccc';
 
     var files = event.dataTransfer.files;
+    loadAudioFiles(files);
+  }
 
+  function loadFiles() {
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'audio/*';
+    input.multiple = true;
+    input.addEventListener('change', function() {
+      loadAudioFiles(input.files);
+    });
+    input.click();
+  }
+
+  function loadAudioFiles(files) {
     for (var i = 0; i < files.length; i++) {
       var audio = document.createElement('audio');
       audio.src = URL.createObjectURL(files[i]);
