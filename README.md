@@ -91,7 +91,7 @@
 <h2>TrackLive</h2>
 <p id="subtitle">By TZU Worship</p>
 
-<div id="dropArea" ondragover="allowDrop(event)" ondrop="drop(event)">
+<div id="dropArea">
   Arrastra y suelta tus archivos de audio aquí.
 </div>
 
@@ -135,6 +135,7 @@
 
     updateAudioElementsTimeUpdate();
     setMasterWaveformSeek();
+
   }
 
   function updateDropAreaStyle(style) {
@@ -253,6 +254,10 @@
       }
     }
   }
+
+  var dropArea = document.getElementById('dropArea');
+  dropArea.addEventListener('dragover', allowDrop);
+  dropArea.addEventListener('drop', drop);
 </script>
 
 </body>
