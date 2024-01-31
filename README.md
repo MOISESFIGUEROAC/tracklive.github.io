@@ -7,19 +7,19 @@
   <script src="https://unpkg.com/wavesurfer.js"></script>
   <style>
     body {
-      font-family: 'Arial', sans-serif; /* Cambiar a la fuente que desees */
+      font-family: 'Arial', sans-serif;
     }
 
     h2 {
       font-weight: bold;
       font-size: 24px;
-      color: black; /* Color del título */
+      color: black;
     }
 
     #subtitle {
       font-size: 16px;
       font-weight: normal;
-      color: gray; /* Color del subtítulo */
+      color: gray;
     }
 
     button {
@@ -30,48 +30,59 @@
       border: none;
     }
 
+    .soloButton {
+      background-color: white;
+      color: black;
+      border: 1px solid black;
+      padding: 5px;
+      cursor: pointer;
+    }
+
+    .soloButton.active {
+      background-color: black;
+      color: white;
+    }
+
     #playButton {
-      color: black; /* Color del botón de reproducción */
+      color: black;
     }
 
     #pauseButton {
-      color: gray; /* Color del botón de pausa */
+      color: gray;
+    }
+
+    #dropArea {
+      border: 2px dashed #ccc;
+      padding: 20px;
+      text-align: center;
     }
 
     #masterSeek {
       width: 100%;
       margin-top: 10px;
-      -webkit-appearance: none; /* Remove default styles in WebKit browsers */
+      -webkit-appearance: none;
       appearance: none;
       height: 10px;
-      background: #ddd; /* Fondo del riel del control deslizante */
+      background: #ddd;
       outline: none;
       opacity: 0.7;
-      -webkit-transition: 0.2s; /* Transición suave para cambios */
       transition: opacity 0.2s;
-      border-radius: 5px; /* Bordes redondeados */
+      border-radius: 5px;
     }
 
     #masterSeek:hover {
-      opacity: 1; /* Hacer el control deslizante más visible al pasar el mouse */
+      opacity: 1;
     }
 
-    #masterSeek::-webkit-slider-thumb {
-      -webkit-appearance: none; /* Remove default styles in WebKit browsers */
-      appearance: none;
-      width: 20px; /* Ancho del pulgar del control deslizante */
-      height: 20px; /* Altura del pulgar del control deslizante */
-      background: #3498db; /* Color del pulgar del control deslizante */
-      cursor: pointer;
-      border-radius: 50%; /* Bordes redondeados para el pulgar del control deslizante */
-    }
-
+    #masterSeek::-webkit-slider-thumb,
     #masterSeek::-moz-range-thumb {
-      width: 20px; /* Ancho del pulgar del control deslizante en navegadores Firefox */
-      height: 20px; /* Altura del pulgar del control deslizante en navegadores Firefox */
-      background: #3498db; /* Color del pulgar del control deslizante en navegadores Firefox */
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background: #3498db;
       cursor: pointer;
-      border-radius: 50%; /* Bordes redondeados para el pulgar del control deslizante en navegadores Firefox */
+      border-radius: 50%;
     }
   </style>
 </head>
@@ -80,7 +91,7 @@
 <h2>TrackLive</h2>
 <p id="subtitle">By TZU Worship</p>
 
-<div id="dropArea" style="border: 2px dashed #ccc; padding: 20px; text-align: center;">
+<div id="dropArea" ondragover="allowDrop(event)" ondrop="drop(event)">
   Arrastra y suelta tus archivos de audio aquí.
 </div>
 
@@ -102,58 +113,85 @@
   var audioElements = [];
   var masterVolume = 1;
   var masterWaveform;
+  var soloButtons = [];
 
   function allowDrop(event) {
     event.preventDefault();
-    document.getElementById('dropArea').style.border = '2px dashed #aaa';
+    updateDropAreaStyle('2px dashed #aaa');
   }
 
   function drop(event) {
     event.preventDefault();
-    document.getElementById('dropArea').style.border = '2px dashed #ccc';
+    updateDropAreaStyle('2px dashed #ccc');
 
     var files = event.dataTransfer.files;
 
     for (var i = 0; i < files.length; i++) {
-      var audio = document.createElement('audio');
-      audio.src = URL.createObjectURL(files[i]);
-      audio.preload = 'auto';
-      audio.controls = true;
-      audioElements.push(audio);
-
-      // Mostrar el nombre del archivo
-      var fileName = document.createElement('p');
-      fileName.textContent = files[i].name;
-      document.body.appendChild(fileName);
-
-      document.body.appendChild(audio);
+      createAudioElement(files[i]);
     }
 
-    // Inicializar Wavesurfer para la forma de onda maestra
+    initializeMasterWaveform(files);
+    updateMasterWaveform(files[0]);
+
+    updateAudioElementsTimeUpdate();
+    setMasterWaveformSeek();
+  }
+
+  function updateDropAreaStyle(style) {
+    document.getElementById('dropArea').style.border = style;
+  }
+
+  function createAudioElement(file) {
+    var audio = document.createElement('audio');
+    audio.src = URL.createObjectURL(file);
+    audio.preload = 'auto';
+    audio.controls = true;
+    audioElements.push(audio);
+
+    var fileName = document.createElement('p');
+    fileName.textContent = file.name;
+
+    var soloButton = document.createElement('button');
+    soloButton.textContent = 'Solo';
+    soloButton.className = 'soloButton';
+    soloButton.onclick = function() {
+      toggleSolo(audio);
+    };
+    soloButtons.push({ audio: audio, button: soloButton });
+
+    document.body.appendChild(fileName);
+    document.body.appendChild(audio);
+    document.body.appendChild(soloButton);
+  }
+
+  function initializeMasterWaveform(files) {
     masterWaveform = WaveSurfer.create({
       container: '#masterWaveform',
-      waveColor: 'gray', // Cambiar a gris
-      progressColor: 'black', // Cambiar a negro
+      waveColor: 'gray',
+      progressColor: 'black',
       height: 50,
       cursorWidth: 0,
-      interact: true,  // Permitir interacción con la forma de onda
+      interact: true,
     });
+  }
 
-    // Cargar la forma de onda maestra con el primer archivo de audio
-    masterWaveform.load(URL.createObjectURL(files[0]));
+  function updateMasterWaveform(file) {
+    masterWaveform.load(URL.createObjectURL(file));
+  }
 
-    // Actualizar la forma de onda maestra a medida que se reproduce
+  function updateAudioElementsTimeUpdate() {
     audioElements.forEach(function(audio) {
       audio.addEventListener('timeupdate', function() {
         var currentTime = audio.currentTime;
         var duration = audio.duration;
         var percentage = (currentTime / duration) * 100;
-        masterSeek.value = percentage;
+        document.getElementById('masterSeek').value = percentage;
         masterWaveform.seekTo(currentTime / duration);
       });
     });
+  }
 
-    // Hacer clic en la forma de onda maestra para cambiar la posición del track maestro
+  function setMasterWaveformSeek() {
     masterWaveform.on('seek', function(progress) {
       var currentTime = progress * audioElements[0].duration;
       audioElements.forEach(function(audio) {
@@ -190,9 +228,31 @@
     });
   }
 
-  var dropArea = document.getElementById('dropArea');
-  dropArea.addEventListener('dragover', allowDrop);
-  dropArea.addEventListener('drop', drop);
+  function toggleSolo(clickedAudio) {
+    var soloButton = soloButtons.find(function(solo) {
+      return solo.audio === clickedAudio;
+    });
+
+    if (soloButton) {
+      soloButton.button.classList.toggle('active');
+
+      var activeSolos = soloButtons.filter(function(solo) {
+        return solo.button.classList.contains('active');
+      });
+
+      if (activeSolos.length > 0) {
+        audioElements.forEach(function(audio) {
+          audio.volume = activeSolos.some(function(solo) {
+            return solo.audio === audio;
+          }) ? masterVolume : 0;
+        });
+      } else {
+        audioElements.forEach(function(audio) {
+          audio.volume = masterVolume;
+        });
+      }
+    }
+  }
 </script>
 
 </body>
